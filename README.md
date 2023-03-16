@@ -5,6 +5,7 @@ Pass in a url and some config, get back a different url that expires in X amount
 
 POST /create
 
+```
 {
     // URL to redirect to if the link is valid
     "url": "http://www.foo.com?bar=baz",
@@ -15,11 +16,14 @@ POST /create
     // Custom Url to redirect to, if the link is expired
     "expiredRedirectUrl": "http://www.my-site.com/expired"
   }
-  
+```
+
+```
 response 
 {
    "url": "{function_app_host}/r/{guid}"
 }
+```
 
 
 GET /r/{guid}
