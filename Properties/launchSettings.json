@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "expiring_link_service": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7169",
+      "launchBrowser": false
+    }
+  }
+}
