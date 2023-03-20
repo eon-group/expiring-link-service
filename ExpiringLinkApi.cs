@@ -17,6 +17,15 @@ namespace EON.Function
     const string TABLE_NAME = "ExpiringLinks";
     const string DEFAULT_EXPIRED_HTML = "<p>This link has expired.</p>";
 
+    private static Lazy<TableClient> lazyClient = new Lazy<TableClient>(InitializeTableClient);
+    private static TableClient tableClient => lazyClient.Value;
+
+    private static TableClient InitializeTableClient()
+    {
+      return new TableClient(new Uri(Environment.GetEnvironmentVariable("TABLE_SERVICE_URI")), TABLE_NAME, new DefaultAzureCredential());
+    }
+
+
     [FunctionName("create")]
     public static async Task<IActionResult> Create(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] CreateExpiringLinkRequest createExpiringLinkRequest, HttpRequest req,
@@ -61,7 +70,6 @@ namespace EON.Function
         ExpiredRedirectUrl = createExpiringLinkRequest.expiredRedirectUrl
       };
 
-      var tableClient = new TableClient(new Uri(Environment.GetEnvironmentVariable("TABLE_SERVICE_URI")), TABLE_NAME, new DefaultAzureCredential());
       var addEntityResponse = await tableClient.AddEntityAsync(tableEntity);
       if (addEntityResponse.IsError)
       {
@@ -83,7 +91,6 @@ namespace EON.Function
       string linkIdentifier = linkIdentifierGuid.ToString();
       log.LogInformation($"Request to Get Expiring Link: {linkIdentifier}");
 
-      var tableClient = new TableClient(new Uri(Environment.GetEnvironmentVariable("TABLE_SERVICE_URI")), TABLE_NAME, new DefaultAzureCredential());
       var getEntityResponse = await tableClient.GetEntityAsync<ExpiringLinkTableEntity>(linkIdentifier, string.Empty);
       if (getEntityResponse == null || getEntityResponse.Value == null)
       {
@@ -142,6 +149,9 @@ namespace EON.Function
     ILogger log)
     {
       log.LogInformation($"Request to Wake Expiring Link Service");
+
+      // This is used to instantiate the DefaultAzureCredentials Singleton and obtain an access token, so that the first request to CREATE or GET a link isn't so costly.
+      var getEntityResponse = await tableClient.GetEntityIfExistsAsync<ExpiringLinkTableEntity>(string.Empty, string.Empty);
 
       return new OkResult();
     }
