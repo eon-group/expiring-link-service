@@ -134,6 +134,17 @@ namespace EON.Function
       log.LogInformation("Redirecting user to configured url");
       return new RedirectResult(getEntityResponse.Value.Url);
     }
+
+
+    [FunctionName("wake")]
+    public static async Task<IActionResult> Wake(
+    [HttpTrigger(AuthorizationLevel.Function, "get", Route = "w")] HttpRequest req,
+    ILogger log)
+    {
+      log.LogInformation($"Request to Wake Expiring Link Service");
+
+      return new OkResult();
+    }
   }
 
 
